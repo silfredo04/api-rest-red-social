@@ -7,5 +7,6 @@ rutasUser.get("/usuario/prueba",userControllers.prueba_user);
 
 // RUTA UTIL
 rutasUser.post("/usuario/register",userControllers.register);
+rutasUser.post("/usuario/login",userControllers.login);
 
 module.exports = rutasUser;

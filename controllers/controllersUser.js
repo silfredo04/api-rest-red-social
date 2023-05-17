@@ -1,6 +1,10 @@
 // Importar dependencias y modulos 
 const bcrypt = require("bcrypt");
+// importar modelos 
 const Usermodels = require("../models/ModelsUser");
+
+// importar servicios 
+const jwt = require("../services/jwt");
 // acciones de prueba 
 
 const prueba_user = (req, res) => {
@@ -60,19 +64,78 @@ const register = (req, res) => {
                 usersStored
             });
         }).catch(error => {
-                return res.status(500).json({
-                    status: "error",
-                    mensaje: "Error al guardado el usuario " + error
-                });
+            return res.status(500).json({
+                status: "error",
+                mensaje: "Error al guardado el usuario " + error
             });
+        });
     }).catch(error => {
         if (error) return res.status(500).json({ status: "error", message: "Error en la consulta" });
     });
+}
+
+// login
+
+const login = (req, res) => {
+
+    // recoger los parametros del body 
+
+    let parametros = req.body;
+
+    // validar si los datos llegan 
+
+    if (!parametros.email || !parametros.password) {
+        return res.status(400).send({
+            status: "Error",
+            message: "Faltan datos por enviar"
+        })
+    }
+
+    // buscar en la base de datos si existe 
+
+    Usermodels.findOne({ email: parametros.email })/* .select({"password":0}) */.then(user => {
+        if(!user){
+            return res.status(404).json({
+                status: "Error",
+                mensaje: "No existe el usuario "
+            });
+        }
+        // Comprobar su contraseña
+        let pwd = bcrypt.compareSync(parametros.password,user.password);
+        if(!pwd){
+            return res.status(200).json({
+                status: "error",
+                message: "no te has identificado correctamente"
+            });
+        }
+        // Conseguir Token
+
+        const token = jwt.createToken(user);
+
+        // devolver datos del usuario 
+        return res.status(200).json({
+            status: "success",
+            message: "Te has identificado correctamente",
+            user:{
+                id:user._id,
+                name:user.name,
+                nick:user.nick
+            },
+            token
+        });
+    }).catch(error => {
+        return res.status(404).json({
+            status: "Error",
+            mensaje: "No existe el usuario " + error
+        });
+    });
+
 }
 
 // Exportar acciones 
 
 module.exports = {
     prueba_user,
-    register
+    register,
+    login
 }
