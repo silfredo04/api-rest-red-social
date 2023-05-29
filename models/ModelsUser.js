@@ -7,6 +7,7 @@ const ModelsUserSchema = Schema({
         required:true
     },
     surname:String,
+    bio:String,
     nick:{
         type:String,
         required:true
