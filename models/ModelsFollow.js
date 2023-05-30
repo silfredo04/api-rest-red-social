@@ -3,10 +3,12 @@ const {Schema,model} = require("mongoose");
 
 const ModelsFollowSchema = Schema({
     id_user:{
-        type:String
+        type: Schema.ObjectId,
+        ref: "User"
     },
     followed:{
-        type:String
+        type: Schema.ObjectId,
+        ref: "User"
     },
     created_at:{
         type:Date,
@@ -14,4 +16,4 @@ const ModelsFollowSchema = Schema({
     }
 });
 
-module.exports = model("Follow",ModelsFollowSchema,"followed")
+module.exports = model("Follow",ModelsFollowSchema,"follows")

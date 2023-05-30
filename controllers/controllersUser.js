@@ -254,7 +254,7 @@ const ActualizarUsuarios = (req, res) => {
         }
 
         // Buscar y actualizar 
-        Usermodels.findByIdAndUpdate(identidaUsuario.id,UsuarioActualizar,{new:true}).then((usuarioActualizado)=>{
+        Usermodels.findByIdAndUpdate({_id:identidaUsuario.id},UsuarioActualizar,{new:true}).then((usuarioActualizado)=>{
 
             if(!usuarioActualizado){
                 return res.status(500).json({

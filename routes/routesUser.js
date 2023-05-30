@@ -1,7 +1,7 @@
 const express = require("express");
 const rutasUser = express.Router();
 const userControllers = require('../controllers/ControllersUser');
-const check = require("../middlewares/auth");
+const check = require("../middlewares/auth"); // metodos de autenticacion 
 const multer = require("multer"); // se encarga subir archivos o imagenes al servidor 
 
 
