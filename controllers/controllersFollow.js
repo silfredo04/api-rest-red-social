@@ -2,6 +2,12 @@
 const FollowsModel = require("../models/ModelsFollow");
 const Usermodels = require("../models/ModelsUser");
 
+// importar dependencias
+const mongoosePaginate = require("mongoose-pagination");
+
+// importar servicios 
+const followService = require("../services/followService");
+
 // acciones de prueba 
 
 const prueba_follow = (req,res) =>{
@@ -87,14 +93,114 @@ const guardarSeguidores = (req,res) =>{
 
  }
 
-// Accion listado de usuario que estouy siguiendo
+ // funcion ontener cantidad de usuarios
+async function obtenerCantidadFollows() {
+    try {
+      const count = await FollowsModel.countDocuments({}).exec();
+      return count;
+    } catch (error) {
+      return 'Error al obtener la cantidad de usuarios:', error;
+    }
+  }
 
-// Accion de lostado de usuario que me siguen 
+// Accion listado de usuario que cualquier usuario esta siguiendo (siguiendo)
+const lista_user_siguiendo = (req, res) =>{
+    // Sacar el id del usuario identificado 
+
+    let usuarioIdentificado = req.user.id;
+
+    // Comprobar si mellega el id por parametros en url 
+    let idruta = req.params.id;
+
+    if(idruta) usuarioIdentificado = idruta;
+    
+    // Comprobar si me llega la pagina, si no la pagina 1 
+    let page = 1
+    let pageRuta = req.params.page;
+
+    if(pageRuta) page = pageRuta;
+
+    // Usuarios por pagina quiero mostrar 
+
+    let usuariosPorPagina = 5;
+
+
+    // Find a follow, popular datos de los usuarios y paginar con mongoose paginate
+    FollowsModel.find({id_user:usuarioIdentificado})
+                .populate("id_user followed","-password -role -__v")
+                .paginate(page,usuariosPorPagina)
+                .then(async (seguidores) => {
+
+                // cantidad seguidores
+                let total = await obtenerCantidadFollows();
+                // Listado de usuarios de samerito, y soy silfredo
+                // Sacar un array de ids de los usuarios que me siguen y los que sigo como silfredo
+
+                let followUserIds = await followService.followUserIds(usuarioIdentificado);
+                return res.status(200).json({
+                    status: "success",
+                    mensaje: "Listado de usuarios que estoy siguiendo",
+                    seguidores,
+                    total,
+                    pages:Math.ceil(total/usuariosPorPagina),
+                    user_following:followUserIds.following,
+                    user_follow_me:followUserIds.followers
+                });
+    });
+}
+
+// Accion listado de usuario que siguen a cualquier otro usuario (soy seguido, mis seguidores)
+const lista_user_me_siguen = (req, res) =>{
+    // Sacar el id del usuario identificado 
+
+    let usuarioIdentificado = req.user.id;
+
+    // Comprobar si mellega el id por parametros en url 
+    let idruta = req.params.id;
+
+    if(idruta) usuarioIdentificado = idruta;
+    
+    // Comprobar si me llega la pagina, si no la pagina 1 
+    let page = 1
+    let pageRuta = req.params.page;
+
+    if(pageRuta) page = pageRuta;
+
+    // Usuarios por pagina quiero mostrar 
+
+    let usuariosPorPagina = 5;
+
+    // Find a follow, popular datos de los usuarios y paginar con mongoose paginate
+    FollowsModel.find({followed:usuarioIdentificado})
+                .populate("id_user","-password -role -__v")
+                .paginate(page,usuariosPorPagina)
+                .then(async (seguidores) => {
+
+                // cantidad seguidores
+                let total = await obtenerCantidadFollows();
+                // Listado de usuarios de samerito, y soy silfredo
+                // Sacar un array de ids de los usuarios que me siguen y los que sigo como silfredo
+
+                let followUserIds = await followService.followUserIds(usuarioIdentificado);
+                return res.status(200).json({
+                    status: "success",
+                    mensaje: "Listado de usuarios que me siguen",
+                    seguidores,
+                    total,
+                    pages:Math.ceil(total/usuariosPorPagina),
+                    user_following:followUserIds.following,
+                    user_follow_me:followUserIds.followers
+                });
+    });
+}
+
 
 // Exportar acciones 
 
 module.exports = {
     prueba_follow,
     guardarSeguidores,
-    borrarSeguidores
+    borrarSeguidores,
+    lista_user_siguiendo,
+    lista_user_me_siguen
 }

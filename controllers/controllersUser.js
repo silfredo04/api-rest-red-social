@@ -8,8 +8,9 @@ const Usermodels = require("../models/ModelsUser");
 
 // importar servicios 
 const jwt = require("../services/jwt");
-// acciones de prueba 
+const followService = require("../services/followService");
 
+// acciones de prueba 
 const prueba_user = (req, res) => {
     return res.status(200).send({
         menssage: "Mensaje enviado desde: controller/user.js",
@@ -141,19 +142,22 @@ const getUserid = (req,res) =>{
     const id = req.params.id;
 
     // Consulta para sacar los datos del usuario
-    Usermodels.findById(id).select({password:0,role:0}).then(getuserid => {
+    Usermodels.findById(id).select({password:0,role:0}).then(async(getuserid) => {
         if(!getuserid){
             return res.status(404).json({
                 status: "Error",
                 mensaje: "No existe el usuario o hay un error"
             });
         }
-        
+
+        // informacion de seguimiento 
+        const followInfo = await followService.followThisUser(req.user.id,id);
         // devolver el resultado
-        // Posteriromente: devolver informacion de follows
         return res.status(200).json({
             status: "success",
-            getuserid
+            getuserid,
+            following:followInfo.following,
+            follower:followInfo.follower
         });
     }).catch(error => {
         return res.status(404).json({
@@ -194,18 +198,25 @@ const listarUser = (req, res) => {
                 mensaje: "No hay usuarios disponibles"
             });
         }   
+
+        // Listado de usuarios de samerito, y soy silfredo
+        // Sacar un array de ids de los usuarios que me siguen y los que sigo como silfredo
+
+        let followUserIds = await followService.followUserIds(req.user.id);
          
         // cantidad de usuarios 
         let total = await obtenerCantidadUsuarios();
         
-        // Devolver el resultado (Posteriormente info follow)
+        // Devolver el resultado
         return res.status(200).json({
             status: "success",
             users,
             page,
             itemsPerpage,
             total,
-            pages:Math.ceil(total/itemsPerpage)
+            pages:Math.ceil(total/itemsPerpage),
+            user_following:followUserIds.following,
+            user_follow_me:followUserIds.followers
         });
     }).catch(error => {
         return res.status(404).json({
