@@ -2,20 +2,21 @@ const {Schema,model} = require("mongoose");
 
 
 const ModelsPublicationSchema = Schema({
+    id_user:{
+        type: Schema.ObjectId,
+        ref: "User"
+    },
     text:{
         type:String,
         required:true
     },
     file:{
         type:String,
-        required:true
+        default:"default.png"
     },
     created_at:{
         type:Date,
         default:Date.now
-    },
-    id_user:{
-        type:String
     }
 });
 

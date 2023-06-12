@@ -27,5 +27,7 @@ rutasUser.get("/usuario/getuser/:id",check.auth,userControllers.getUserid);
 rutasUser.get("/usuario/listarusuarios/:page?",check.auth,userControllers.listarUser);
 rutasUser.put("/usuario/actualizarusuario",check.auth,userControllers.ActualizarUsuarios);
 rutasUser.post("/usuario/montarfotousuario",[check.auth, subida.single("file0")], userControllers.motarFotoUsuario);
-rutasUser.get("/usuario/obtenerimagenavatar/:file",check.auth,userControllers.obtenerImagenAvatar);
+rutasUser.get("/usuario/obtenerimagenavatar/:file",userControllers.obtenerImagenAvatar);
+rutasUser.get("/usuario/contadores/:id",check.auth,userControllers.contadores);
+
 module.exports = rutasUser;

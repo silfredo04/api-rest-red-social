@@ -127,7 +127,7 @@ const lista_user_siguiendo = (req, res) =>{
 
     // Find a follow, popular datos de los usuarios y paginar con mongoose paginate
     FollowsModel.find({id_user:usuarioIdentificado})
-                .populate("id_user followed","-password -role -__v")
+                .populate("id_user followed","-password -role -__v -email")
                 .paginate(page,usuariosPorPagina)
                 .then(async (seguidores) => {
 
@@ -172,7 +172,7 @@ const lista_user_me_siguen = (req, res) =>{
 
     // Find a follow, popular datos de los usuarios y paginar con mongoose paginate
     FollowsModel.find({followed:usuarioIdentificado})
-                .populate("id_user","-password -role -__v")
+                .populate("id_user","-password -role -__v -email")
                 .paginate(page,usuariosPorPagina)
                 .then(async (seguidores) => {
 

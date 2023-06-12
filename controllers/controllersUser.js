@@ -5,7 +5,8 @@ const fs = require("fs");
 const path = require("path");
 // importar modelos 
 const Usermodels = require("../models/ModelsUser");
-
+const FollowsModel = require("../models/ModelsFollow");
+const Publicationmodels = require("../models/ModelsPublication");
 // importar servicios 
 const jwt = require("../services/jwt");
 const followService = require("../services/followService");
@@ -105,6 +106,7 @@ const login = (req, res) => {
                 mensaje: "No existe el usuario "
             });
         }
+        
         // Comprobar su contraseña
         let pwd = bcrypt.compareSync(parametros.password,user.password);
         if(!pwd){
@@ -142,7 +144,7 @@ const getUserid = (req,res) =>{
     const id = req.params.id;
 
     // Consulta para sacar los datos del usuario
-    Usermodels.findById(id).select({password:0,role:0}).then(async(getuserid) => {
+    Usermodels.findById(id).select({password:0,role:0,email:0}).then(async(getuserid) => {
         if(!getuserid){
             return res.status(404).json({
                 status: "Error",
@@ -191,7 +193,7 @@ const listarUser = (req, res) => {
     // Consultar con mongoose paginate
     let itemsPerpage = 5;
 
-    Usermodels.find().sort('_id').paginate(page,itemsPerpage).then(async (users) => {
+    Usermodels.find().select({password:0,role:0,email:0,__v:0}).sort('_id').paginate(page,itemsPerpage).then(async (users) => {
         if(!users){
             return res.status(404).json({
                 status: "Error",
@@ -262,6 +264,8 @@ const ActualizarUsuarios = (req, res) => {
         if(UsuarioActualizar.password){
             let pwd = await bcrypt.hash(UsuarioActualizar.password, 10);
             UsuarioActualizar.password = pwd;
+        }else{
+            delete UsuarioActualizar.password;
         }
 
         // Buscar y actualizar 
@@ -319,7 +323,7 @@ const motarFotoUsuario = (req,res) =>{
             });
         }); */
     }else{
-        // Recoger id articulo a editar
+        // Recoger id usuario a editar
         let userid = req.user.id;
         // Si todo va bien, actualizar el articulo
         Usermodels.findOneAndUpdate({_id:userid},{image:req.file.filename},{new:true}).exec().then(usuarioActualizado => {
@@ -370,6 +374,37 @@ const obtenerImagenAvatar = (req,res) =>{
     });
 } // fin imagen
 
+// Contar
+const contadores = async (req, res) => {
+
+    let userId = req.user.id;
+
+    if (req.params.id) {
+        userId = req.params.id;
+    }
+
+    try {
+        const following = await FollowsModel.count({ "id_user": userId });
+
+        const followed = await FollowsModel.count({ "followed": userId });
+
+        const publications = await Publicationmodels.count({ "id_user": userId });
+
+        return res.status(200).send({
+            userId,
+            following: following,
+            followed: followed,
+            publications: publications
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: "error",
+            message: "Error en los contadores",
+            error
+        });
+    }
+}
+
 // Exportar acciones 
 
 module.exports = {
@@ -380,5 +415,6 @@ module.exports = {
     listarUser,
     ActualizarUsuarios,
     motarFotoUsuario,
-    obtenerImagenAvatar
+    obtenerImagenAvatar,
+    contadores
 }
