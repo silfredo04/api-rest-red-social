@@ -41,8 +41,8 @@ const register = (req, res) => {
         ]
     }).then(async (users) => {
         if (users && users.length >= 1) {
-            return res.status(200).json({
-                status: "success",
+            return res.status(400).json({
+                status: "error",
                 message: "El susuario ya existe"
             });
         }
@@ -67,7 +67,14 @@ const register = (req, res) => {
             return res.status(200).json({
                 status: "success",
                 message: "Usuario registrado con exito",
-                usersStored
+                user:{
+                    _id:usersStored._id,
+                    name:usersStored.name,
+                    surname:usersStored.surname,
+                    nick:usersStored.nick,
+                    image:usersStored.image,
+                    created_at:usersStored.created_at
+                }
             });
         }).catch(error => {
             return res.status(500).json({
