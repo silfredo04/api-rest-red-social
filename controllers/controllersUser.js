@@ -117,7 +117,7 @@ const login = (req, res) => {
         // Comprobar su contraseña
         let pwd = bcrypt.compareSync(parametros.password,user.password);
         if(!pwd){
-            return res.status(200).json({
+            return res.status(404).json({
                 status: "error",
                 message: "no te has identificado correctamente"
             });
@@ -133,7 +133,10 @@ const login = (req, res) => {
             user:{
                 id:user._id,
                 name:user.name,
-                nick:user.nick
+                surname:user.surname,
+                nick:user.nick,
+                image:user.image,
+                created_at:user.created_at
             },
             token
         });
